@@ -54,6 +54,8 @@ It will then ask for confirmation:
 
 Change Battery voltage ratio  to 1621, confirm Y/N:y
 
+If y or Y is entered it will proceed, otherwise it will return to the menu/
+
 If there is no problem it will write:
 
 Parameter Changed
