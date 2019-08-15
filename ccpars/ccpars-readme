@@ -40,13 +40,17 @@ The program will display this menu:
 11-Out voltage  ratio    ( 1666)    12-offset(    0) reading 0.0 
 Enter a value from 0 to 12: 3
 
-Enter the number of the parameter you want to change, 
+The number next to each parameter is the current value, the number next to reading
+is the corresponding voltage or current, for example, the value of Battery Voltage
+is 13.2 volts.
+
+To use the menu, enter the number of the parameter you want to change, 
 the program will then request the new value:
 
 Modify Battery voltage ratio  
 Current value 1620  Enter new value: 1621
 
-It will than ask for confirmation:
+It will then ask for confirmation:
 
 Change Battery voltage ratio  to 1621, confirm Y/N:y
 
@@ -58,7 +62,7 @@ If something is wrong it will write:
 
 Modify failed
 
-After the operation it will return to the menu:
+After the operation it will return to the menu, showing the new value:
 
  Select Sampling Parameter to modify
  0 - Exit Program
@@ -69,6 +73,9 @@ After the operation it will return to the menu:
  9-Load voltage ratio    ( 1666)    10-offset(    0) reading 0.0 
 11-Out voltage  ratio    ( 1666)    12-offset(    0) reading 0.0 
 Enter a value from 0 to 12: 
+
+To exit the program enter 0.
+
 
 
 
