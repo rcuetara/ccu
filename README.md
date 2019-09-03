@@ -3,4 +3,4 @@ ccu, the Charge Controller Utilities is a collection of utilities for controllin
 ## ccpars
 Modify sampling parameters of a eSmart3 charge controller
 ## ccsetdate
-Set the date and time of a eSmanrt3 charge controller to system date and time
+Set the date and time of a eSmart3 charge controller to system date and time
