@@ -1,0 +1,59 @@
+                                        ccsetdate
+Program to set the date and time  of eSmart3 charge controllers to system date and time.
+
+Instructions:
+
+1. Start the program.
+
+For linux use the file named ccsetdate, for Windows use ccsetdate.exe
+
+To run ccsetdate open a terminal or console and type:
+
+ccsetdate <commport>
+
+commport is the name of the serial port connected to the charge controller.
+
+Examples:
+
+Linux: 
+ccsetdate  /dev/ttyUSB0 
+
+In linux, to use ccsetdate you must have permission to use the serial port. In most systems 
+by being in group dialout, otherwise you need root privileges, use sudo. Example:
+
+sudo ccsetdate /dev/ttyUSB0
+
+Windows:
+ccsetdate COM5
+
+In Windows if the port number is greater than 9 add \\.\ to the name:
+ccsetdate \\.\COM33
+
+2. Program execution
+
+2.1 When the progarm starts ,if the port is not available ccsetdate will print: 
+Failed to open comm port.
+and exit.
+
+2.2 If the port is available but there is no reply from a charger ccsetdate will print:
+Charge Controller not found.
+and exit.
+
+2.3 If there is a reply from a charger ccsetdate will print the charger info,
+for example:
+
+Found charger eSmart3-60A-MPPT  serial 36000000 date 20181013 version V3.0
+
+Note that the serial number reported by the charger has 2 more zeroes 
+than the serial number on the charger label.
+
+If there is no problem it will write:
+
+Date and time set to <system date and time>
+
+for example: Date and time set to Sat Aug 17 13:25:49 2019
+
+If something is wrong it will write:
+
+Set failed
+
