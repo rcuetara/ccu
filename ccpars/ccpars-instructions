@@ -1,0 +1,107 @@
+                                        ccpars 
+Program to modify the sampling parameters of eSmart3 charge controllers.
+
+Instructions:
+
+1. Start the program.
+
+For linux use the file named ccpars, for Windows use ccpars.exe
+
+To run ccpars open a terminal or console and type:
+
+ccpars <commport>
+
+commport is the name of the serial port connected to the charge controller.
+
+Examples:
+
+Linux: 
+ccpars  /dev/ttyUSB0 
+
+In linux, to use ccpars you must have permission to use the serial port. In most systems 
+by being in group dialout, otherwise you need root privileges, use sudo. Example:
+
+sudo ccpars /dev/ttyUSB0
+
+Windows:
+ccpars COM5
+
+In Windows if the port number is greater than 9 add \\.\ to the name:
+ccpars \\.\COM33
+
+2. Program execution
+
+2.1 When the progarm starts ,if the port is not available ccpars will print: 
+Failed to open comm port.
+and exit.
+
+2.2 If the port is available but there is no reply from a charger ccpars will print:
+Charge Controller not found.
+and exit.
+
+2.3 If there is a reply from a charger ccpars will print the charger info,
+for example:
+
+Found charger eSmart3-60A-MPPT  serial 36000000 date 20181013 version V3.0
+
+Note that the serial number reported by the charger has 2 more zeroes 
+than the serial number on the charger label.
+
+2.3.1 The program will display this menu:
+
+ Select Sampling Parameter to modify
+ 0 - Exit Program
+ 1-PV voltage ratio      ( 3300)     2-offset(    0) reading 0.1 
+ 3-Battery voltage ratio ( 1620)     4-offset(    0) reading 13.2 
+ 5-Charge current ratio  ( 2150)     6-offset(    0) reading 0.0 
+ 7-Load current ratio    ( 1100)     8-offset(  130) reading 0.0 
+ 9-Load voltage ratio    ( 1666)    10-offset(    0) reading 0.0 
+11-Out voltage  ratio    ( 1666)    12-offset(    0) reading 0.0 
+Enter a value from 0 to 12: 3
+
+The number in parentheses next to each parameter is the current value, the number next to reading
+is the corresponding voltage or current, for example, the value of Battery Voltage
+above 13.2 volts, the ratio is 1620 and the offset is 0. 
+
+2.3.2 To use the menu, enter the number of the parameter you want to change, 
+the program will then request the new value, for example is 3 is selected:
+
+Modify Battery voltage ratio  
+Current value 1620  Enter new value: 1621
+
+It will then ask for confirmation:
+
+Change Battery voltage ratio  to 1621, confirm Y/N:y
+
+If y or Y is entered it will proceed, otherwise it will return to the menu.
+
+If there is no problem it will write:
+
+Parameter Changed
+
+If something is wrong it will write:
+
+Modify failed
+
+2.3.3 After the operation it will return to the menu, showing the new value:
+
+ Select Sampling Parameter to modify
+ 0 - Exit Program
+ 1-PV voltage ratio      ( 3300)     2-offset(    0) reading 0.1 
+ 3-Battery voltage ratio ( 1621)     4-offset(    0) reading 13.2 
+ 5-Charge current ratio  ( 2150)     6-offset(    0) reading 0.0 
+ 7-Load current ratio    ( 1100)     8-offset(  130) reading 0.0 
+ 9-Load voltage ratio    ( 1666)    10-offset(    0) reading 0.0 
+11-Out voltage  ratio    ( 1666)    12-offset(    0) reading 0.0 
+Enter a value from 0 to 12: 
+
+Tip: Enter any other number to refresh the reading
+
+To exit the program enter 0.
+
+
+
+
+
+
+
