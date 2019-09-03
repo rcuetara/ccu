@@ -1,0 +1,1 @@
+ccpars - program to modify the sampling parameters of a eSmart3 charge controller
