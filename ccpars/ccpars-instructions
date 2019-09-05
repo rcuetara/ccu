@@ -44,8 +44,8 @@ for example:
 
 Found charger eSmart3-60A-MPPT  serial 36000000 date 20181013 version V3.0
 
-Note that the serial number reported by the charger has 2 more zeroes 
-than the serial number on the charger label.
+Note that the serial number reported by the charger may be different from 
+the serial number on the charger label.
 
 2.3.1 The program will display this menu:
 
