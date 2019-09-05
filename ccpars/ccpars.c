@@ -209,7 +209,7 @@ void main(int argc, char *argv[])
 #endif
 //check if charge controller connected to this port
         bytes_read= getdata(fd,readDeviceData,pReply);
-        if ((bytes_read == 47) && (Reply[0] == -86)){
+        if ((Reply[4] == 8) && (Reply[3] == 3) && (Reply[0] == -86)){
         	  memcpy( &charger.serial, &Reply[10],8);
         	  memcpy( &charger.date, &Reply[18],8);
         	  memcpy( &charger.version, &Reply[26],4);
@@ -226,14 +226,14 @@ void main(int argc, char *argv[])
     do {	//input selection loop
 //Get current parameter and running data
         bytes_read= getdata(fd,readSamplingParameters,pReply);
-        if((bytes_read == 35) && (Reply[0] == -86))	
+        if ((Reply[4] == 3) && (Reply[3] == 3) && (Reply[0] == -86))
           memcpy( &parameters, &Reply[10],24);
           else{ printf("\nError:Failed to get parameters, Exiting Program\n");
                 RESTORE_PORT
                return;} 
         bytes_read= getdata(fd,readRunningData,pReply);
-        if((bytes_read == 39) && (Reply[0] == -86))	
-          {memcpy( &running_data, &Reply[10],12);
+        if ((Reply[4] == 0) && (Reply[3] == 3) && (Reply[0] == -86))
+        	          {memcpy( &running_data, &Reply[10],12);
           //swap Out Volts and Load current positions
           choice=running_data[5];running_data[5] = running_data[3];running_data[3]=choice;}
           else{ printf("\nError:Failed to get running data, Exiting Program\n");
