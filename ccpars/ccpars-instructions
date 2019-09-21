@@ -64,7 +64,7 @@ is the corresponding voltage or current, for example, the value of Battery Volta
 above 13.2 volts, the ratio is 1620 and the offset is 0. 
 
 2.3.2 To use the menu, enter the number of the parameter you want to change, 
-the program will then request the new value, for example is 3 is selected:
+the program will then request the new value, for example if 3 is selected:
 
 Modify Battery voltage ratio  
 Current value 1620  Enter new value: 1621

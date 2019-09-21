@@ -22,6 +22,7 @@ Copyright (C) 2019 Ramón A. De La Cuétara
 
 #ifdef linux
 
+#define FDTYPE int
 #define RESTORE_PORT tcsetattr(fd,TCSANOW,&oldset); close(fd);
 #define PORT_EXAMPLE printf("/dev/ttyUSB0\n");
 
@@ -29,116 +30,135 @@ Copyright (C) 2019 Ramón A. De La Cuétara
 #include <termios.h>/* POSIX Terminal Control Definitions*/
 #include <unistd.h> /* UNIX Standard Definitions         */
 #include <errno.h>  /* ERROR Number Definitions          */
-/* 
-getdata send a 10 byte read command to the cc
-input: fd = file descriptor for the comm port
-       group = 10 byte read command
-       reply = address of buffer for returned data
-output: number of bytes received or error, data returned in  buffer
-*/
- int getdata( int fd, signed char group[10], char *reply)
-     {
-     	int replysize;
-      int Sent = 0;
-      int Received;
-    	replysize=group[8]+9; 
-     	Sent= write(fd,group,10);
-     	if(Sent == 10){
-     	sleep(1); 
-   	Received = read (fd, reply, replysize);}
-   	else Received = 0;
-     	return Received;
-     }
 
 /* 
-setdata send a 11 byte write command to the cc
+sendpacket send a  packet to the cc
 input: fd = file descriptor for the comm port
-       group = 11 byte read command with first 6 bytes initialized, rest zeroed
-       reply = address of buffer for returned packet
-output: number of bytes received or error, packet in  buffer
+       packet =  data packet for the cc
+output: true if success
 */
-int setdata( int fd, signed char group[11], short parameter, short pvalue, char *reply)
+bool sendpacket(FDTYPE fd, signed char packet[])
      {
-      int Sent = 0;
-      int Received;
-      group[6] = parameter;
-      memcpy(&group[8],&pvalue,2);
-      group[10] = 75-group[6]-group[8]-group[9]; //calculate checksum
-     	Sent= write(fd,group,11);
-     	if(Sent == 11){
-     	sleep(1);
-   	Received = read (fd, reply, 7); }
-   	else Received = 0;
-      return Received;
-     }
+     	return (write(fd,packet,packet[5]+7) == packet[5]+7);
+     }     
+
+/* 
+getpacket read a packet from the cc
+input: fd = file descriptor for the comm port
+       reply = address of buffer for returned packet
+output: true if success, packet  returned in  buffer
+*/
+   
+bool getpacket(FDTYPE fd,char * reply) 
+     {
+     	int i, received;
+     	signed char checksum;
+     	received=read(fd,reply,128);
+     	if (received > 6) 
+     	   { 
+     	   checksum = 0;
+     	   for (i = 0; i< received; ++i) checksum += reply[i];
+     	   return ((checksum == 0) && (reply[0] == -86));
+     	   }
+     	return false;
+     }    
+     
   struct termios oldset,newset;	
-  int fd;
 #endif
 
 #ifdef windows
 
+#define FDTYPE HANDLE
 #define RESTORE_PORT SetCommState(fd, &oldset); CloseHandle(fd);
 #define PORT_EXAMPLE printf("COM5\n");
 
 #include <windows.h>
-/* 
-getdata send a 10 byte read command to the cc
-input: fd = file handle for the comm port
-       group = 10 byte read command
-       reply = address of buffer for returned data
-output: number of bytes received or error, data returned in  buffer
-*/
- int getdata( HANDLE fd, signed char group[10], char *reply)
-     {
-     	int replysize;
-      int Sent = 0;
-      int Received;
-      bool rwok;
-    	replysize=group[8]+9;
-    	rwok = WriteFile(fd,group,10,&Sent,NULL);
-     	if(rwok && (Sent == 10)){
-     	Sleep(1);	
-     	rwok = ReadFile( fd,reply,replysize,&Received,NULL);
-     	if (!rwok) Received=0; }
-   	else Received = 0;
-     	return Received;
-     }
 
 /* 
-setdata send a 11 byte write command to the cc
-input: fd = file handle for the comm port
-       group = 11 byte read command with first 6 bytes initialized, rest zeroed
-       reply = address of buffer for returned packet
-output: number of bytes received or error, packet in  buffer
+sendpacket send a  packet to the cc
+input: fd = file descriptor for the comm port
+       packet =  data packet for the cc
+output: true if success
 */
-int setdata( HANDLE fd, signed char group[11], short parameter, short pvalue, char *reply)
+bool sendpacket(FDTYPE fd, signed char packet[128])
      {
-      int Sent = 0;
-      int Received;
-      bool rwok;
-      group[6] = parameter;
-      memcpy(&group[8],&pvalue,2);
-      group[10] = 75-group[6]-group[8]-group[9]; //calculate checksum
-    	rwok = WriteFile(fd,group,11,&Sent,NULL);
-     	if(rwok && (Sent == 11)){
-     	Sleep(1);	
-     	rwok = ReadFile( fd,reply,7,&Received,NULL);
-     	if (!rwok) Received=0; }
-      else Received = 0;
-      return Received;
-     }
-  bool status;
-  HANDLE fd;
+     	int sent;
+     	return (WriteFile(fd,packet,packet[5]+7,&sent,NULL) && ( sent == packet[5]+7));
+     }     
+/* 
+getpacket read a packet from the cc
+input: fd = file descriptor for the comm port
+       reply = address of buffer for returned packet
+output: true if success, packet  returned in  buffer
+*/
+bool getpacket(FDTYPE fd,char * reply) 
+     {
+     	int i, received;
+     	bool rwok;
+     	signed char checksum;
+     	received=read(fd,reply,128);\
+     	rwok = ReadFile( fd,reply,128,&received,NULL);
+     	if (!rwok) return false;
+     	if (received > 6) 
+     	   { 
+     	   checksum=0;
+     	   for (i = 0; i< received; ++i) checksum += reply[i];
+     	   return ((checksum == 0) && (reply[0] == -86));
+     	   }
+     	return false;
+     }    
+  bool status;   
   DCB oldset = { 0 };
   DCB newset = { 0 };
   COMMTIMEOUTS touts = { 0 };
 #endif
+
 
 struct charger_data {
     char serial[9],
          date[9],
          version[5],
          model[17]; };
+/* 
+getdata send a  command that returns data to the cc
+input: fd = file descriptor for the comm port
+       command = read command
+       reply = address of buffer for returned data
+output: true if success, data returned in  buffer
+*/
+ bool getdata( FDTYPE fd, char *command, char *reply)
+     {
+      if (sendpacket(fd, command))
+          { sleep(1);
+          return getpacket(fd,reply);
+          }
+      return false;       
+     }   
+
+     
+
+/* 
+setdata send a single parameter write command to the cc
+input: fd = file descriptor for the comm port
+       command = 11 byte write command with first 6 bytes initialized, rest zeroed
+       parameter = parameter to change
+       pvalue = parameter value
+       reply = address of buffer for returned packet
+output: true if command send successful, cc reply  returned in  buffer
+*/
+
+bool setdata( FDTYPE fd, char *command , short parameter, short pvalue, char *reply)
+     {
+      command[6] = parameter;
+      memcpy(&command[8],&pvalue,2);
+      command[10] = 75-command[6]-command[8]-command[9]; //calculate checksum
+      if (sendpacket(fd,command))
+          { sleep(1);
+          return getpacket(fd,reply);
+          }
+      return false;
+     }
+          
 
 void main(int argc, char *argv[])
 { 
@@ -158,9 +178,8 @@ void main(int argc, char *argv[])
   char yn;  
   int i,bytes_read;
   short running_data[6]; 
-  bool found;
-
-  found=false;
+  FDTYPE fd;
+  
   pReply = &Reply;
   bzero(&charger, sizeof(charger));
   printf("ccpars: Modify eSmart3 charge controller sampling parameters\n ");
@@ -208,37 +227,38 @@ void main(int argc, char *argv[])
           
 #endif
 //check if charge controller connected to this port
-        bytes_read= getdata(fd,readDeviceData,pReply);
-        if ((Reply[4] == 8) && (Reply[3] == 3) && (Reply[0] == -86)){
+        if (getdata(fd,&readDeviceData,pReply) && (Reply[4] == 8) 
+                         && (Reply[3] == 3) && (Reply[0] == -86)){
         	  memcpy( &charger.serial, &Reply[10],8);
         	  memcpy( &charger.date, &Reply[18],8);
         	  memcpy( &charger.version, &Reply[26],4);
         	  memcpy( &charger.model, &Reply[30],16);
         	  printf("\nFound charger %s  serial %s date %s version %s\n", charger.model,
         	          charger.serial,charger.date,charger.version);
-        	  found=true;} 
+        	  } 
            else{
            printf("Charge Controller not found.\n");
            RESTORE_PORT //restore old port settings
-           }   	
- if (!found)return;          
+           return;}   	
  do {                      //main loop
     do {	//input selection loop
 //Get current parameter and running data
-        bytes_read= getdata(fd,readSamplingParameters,pReply);
-        if ((Reply[4] == 3) && (Reply[3] == 3) && (Reply[0] == -86))
+        if (getdata(fd,&readSamplingParameters,pReply) && (Reply[4] == 3) 
+                                 && (Reply[3] == 3) && (Reply[0] == -86))
           memcpy( &parameters, &Reply[10],24);
           else{ printf("\nError:Failed to get parameters, Exiting Program\n");
                 RESTORE_PORT
-               return;} 
-        bytes_read= getdata(fd,readRunningData,pReply);
-        if ((Reply[4] == 0) && (Reply[3] == 3) && (Reply[0] == -86))
-        	          {memcpy( &running_data, &Reply[10],12);
+                return;} 
+        if(getdata(fd,&readRunningData,pReply) && (Reply[4] == 0) 
+                       && (Reply[3] == 3) && (Reply[0] == -86))
+        	 {memcpy( &running_data, &Reply[10],12);
           //swap Out Volts and Load current positions
-          choice=running_data[5];running_data[5] = running_data[3];running_data[3]=choice;}
+               choice=running_data[5];
+               running_data[5] = running_data[3];
+               running_data[3]=choice;}
           else{ printf("\nError:Failed to get running data, Exiting Program\n");
                 RESTORE_PORT
-               return;} 
+                return;} 
 //Display menu and current data          
         printf("\n Select Sampling Parameter to modify\n");
         printf(" 0 - Exit Program\n");
@@ -257,9 +277,9 @@ void main(int argc, char *argv[])
         printf("\nChange %s  %s to %d, confirm Y/N:",parameter_name[(choice-1)/2], parameter_type[(choice+1) %2], new_parameter);
         scanf(" %c",&yn);
         if(( yn == 'Y') || ( yn == 'y'))
-          {bytes_read= setdata( fd, setSamplingParameters, choice, new_parameter, pReply);
-           if ((bytes_read == 7) && (Reply[3] == 0)) printf("\nParameter Changed\n");
-            else printf("Modify failed \n");
+          {if (setdata( fd, &setSamplingParameters, choice, new_parameter, pReply)
+                && (Reply[0] == -86) && (Reply[3] == 0)) printf("\nParameter Changed\n");
+           else printf("Modify failed \n");
           }   
        }while (true);// end of main loop
 } //end of program   
